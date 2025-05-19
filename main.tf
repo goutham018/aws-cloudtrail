@@ -10,7 +10,9 @@ module "iam_role" {
 }
 
 module "cloudtrail" {
-  source              = "./modules/cloudtrail"
-  cloudtrail_role_arn = module.iam_role.role_arn
-  sns_topic_arn       = module.sns.topic_arn
+  source               = "./modules/cloudtrail"
+  cloudtrail_role_arn  = module.iam_role.role_arn
+  sns_topic_arn        = module.sns.topic_arn
+  cloudtrail_name      = var.cloudtrail_name
+  log_group_name       = var.log_group_name
 }
