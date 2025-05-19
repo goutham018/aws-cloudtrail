@@ -1,18 +1,11 @@
-variable "cloudtrail_role_arn" {}
-variable "sns_topic_arn" {}
-
 resource "aws_s3_bucket" "trail_bucket" {
-  bucket        = "cloudtrail-logs-${random_id.suffix.hex}"
+  bucket        = "cloudtrail-logs-bucket-273550"
   force_destroy = true
-}
-
-resource "random_id" "suffix" {
-  byte_length = 4
 }
 
 resource "aws_cloudwatch_log_group" "trail" {
   name              = "/aws/cloudtrail/account-activity"
-  retention_in_days = 30
+  retention_in_days = 90
 }
 
 resource "aws_cloudtrail" "main" {
