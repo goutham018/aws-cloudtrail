@@ -1,42 +1,3 @@
-resource "aws_s3_bucket" "trail_bucket" {
-  bucket        = "cloudtrail-activity-logs-273550"
-  force_destroy = true
-
-  tags = {
-    Name = "CloudTrail-Bucket-for-demo"
-  }
-}
-
-resource "aws_s3_bucket_policy" "trail_bucket_policy" {
-  bucket = aws_s3_bucket.trail_bucket.id
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect    = "Allow"
-        Principal = {
-          Service = "cloudtrail.amazonaws.com"
-        }
-        Action   = "s3:GetBucketAcl"
-        Resource = aws_s3_bucket.trail_bucket.arn
-      },
-      {
-        Effect    = "Allow"
-        Principal = {
-          Service = "cloudtrail.amazonaws.com"
-        }
-        Action = "s3:PutObject"
-        Resource = "${aws_s3_bucket.trail_bucket.arn}/MyCustomLogs/${data.aws_caller_identity.current.account_id}/*"
-        Condition = {
-          StringEquals = {
-            "s3:x-amz-acl" = "bucket-owner-full-control"
-          }
-        }
-      }
-    ]
-  })
-}
 
 data "aws_caller_identity" "current" {}
 
@@ -89,7 +50,6 @@ resource "aws_cloudtrail" "trail" {
 
   depends_on = [
     aws_iam_role_policy.cloudtrail_policy,
-    aws_s3_bucket_policy.trail_bucket_policy,
     aws_cloudwatch_log_group.trail-for-demo
   ]
 }
