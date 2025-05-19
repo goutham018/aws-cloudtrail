@@ -1,4 +1,4 @@
-resource "aws_cloudwatch_metric_alarm" "login_alarm" {
+resource "aws_cloudwatch_metric_alarm" "cloud-watch-alarm" {
   alarm_name          = "AWS-Login-Alarm"
   alarm_description   = "Triggers on AWS Console login attempts"
   metric_name         = "ConsoleLogin-for-demo"

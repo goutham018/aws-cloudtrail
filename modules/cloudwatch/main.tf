@@ -1,8 +1,4 @@
-variable "log_group_name" {
-  type = string
-}
-
-resource "aws_cloudwatch_log_metric_filter" "login_filter" {
+resource "aws_cloudwatch_log_metric_filter" "cloud-watch-filter" {
   name           = "console-login-for-demo"
   log_group_name = var.log_group_name
   pattern        = "{ $.eventName = \"ConsoleLogin\" }"
