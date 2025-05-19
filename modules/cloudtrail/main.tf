@@ -41,7 +41,7 @@ resource "aws_s3_bucket_policy" "trail_bucket_policy" {
 data "aws_caller_identity" "current" {}
 
 resource "aws_cloudwatch_log_group" "trail" {
-  name              = "/aws/cloudtrail/login"
+  name              = "/aws/cloudtrail/login/demo"
   retention_in_days = 30
 }
 
