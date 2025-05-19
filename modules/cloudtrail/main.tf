@@ -1,46 +1,107 @@
+resource "random_id" "suffix" {
+  byte_length = 4
+}
+
 resource "aws_s3_bucket" "trail_bucket" {
-  bucket        = "cloudtrail-logs-bucket-273550"
+  bucket        = "cloudtrail-activity-logs-${random_id.suffix.hex}"
   force_destroy = true
-}
 
-resource "aws_cloudwatch_log_group" "trail" {
-  name              = "/aws/cloudtrail/account-activity"
-  retention_in_days = 90
-}
-
-resource "aws_cloudtrail" "main" {
-  name                          = var.cloudtrail_name
-  s3_bucket_name                = aws_s3_bucket.trail_bucket.bucket
-  include_global_service_events = true
-  is_multi_region_trail        = true
-  enable_log_file_validation   = true
-  cloud_watch_logs_log_group_arn = aws_cloudwatch_log_group.trail.arn
-  cloud_watch_logs_role_arn    = var.cloudtrail_role_arn
-}
-
-resource "aws_cloudwatch_log_metric_filter" "console_login" {
-  name           = "ConsoleLogin"
-  log_group_name = aws_cloudwatch_log_group.trail.name
-
-  pattern = "{ $.eventName = \"ConsoleLogin\" }"
-
-  metric_transformation {
-    name      = "ConsoleLoginCount"
-    namespace = "CloudTrailMetrics"
-    value     = "1"
+  tags = {
+    Name = "CloudTrailLogsBucket"
   }
 }
 
-resource "aws_cloudwatch_metric_alarm" "console_login_alarm" {
-  alarm_name          = "ConsoleLoginDetected"
-  comparison_operator = "GreaterThanOrEqualToThreshold"
-  evaluation_periods  = 1
-  metric_name         = "ConsoleLoginCount"
-  namespace           = "CloudTrailMetrics"
-  period              = 60
-  statistic           = "Sum"
-  threshold           = 1
+resource "aws_s3_bucket_policy" "trail_bucket_policy" {
+  bucket = aws_s3_bucket.trail_bucket.id
 
-  alarm_description = "Alarm for AWS Console login"
-  alarm_actions     = [var.sns_topic_arn]
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect    = "Allow"
+        Principal = {
+          Service = "cloudtrail.amazonaws.com"
+        }
+        Action   = "s3:GetBucketAcl"
+        Resource = aws_s3_bucket.trail_bucket.arn
+      },
+      {
+        Effect    = "Allow"
+        Principal = {
+          Service = "cloudtrail.amazonaws.com"
+        }
+        Action = "s3:PutObject"
+        Resource = "${aws_s3_bucket.trail_bucket.arn}/AWSLogs/${data.aws_caller_identity.current.account_id}/*"
+        Condition = {
+          StringEquals = {
+            "s3:x-amz-acl" = "bucket-owner-full-control"
+          }
+        }
+      }
+    ]
+  })
+}
+
+data "aws_caller_identity" "current" {}
+
+resource "aws_cloudwatch_log_group" "trail" {
+  name              = "/aws/cloudtrail/activity"
+  retention_in_days = 7
+}
+
+resource "aws_iam_role" "cloudtrail_role" {
+  name = "cloudtrail-cloudwatch-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Principal = {
+        Service = "cloudtrail.amazonaws.com"
+      }
+      Action = "sts:AssumeRole"
+    }]
+  })
+}
+
+resource "aws_iam_role_policy" "cloudtrail_policy" {
+  name = "cloudtrail-cloudwatch-policy"
+  role = aws_iam_role.cloudtrail_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Action = [
+        "logs:PutLogEvents",
+        "logs:CreateLogStream"
+      ]
+      Resource = "${aws_cloudwatch_log_group.trail.arn}:*"
+    }]
+  })
+}
+
+resource "aws_cloudtrail" "trail" {
+  name                          = "account-activity-trail"
+  s3_bucket_name                = aws_s3_bucket.trail_bucket.bucket
+  include_global_service_events = true
+  is_multi_region_trail         = true
+  enable_log_file_validation    = true
+  enable_logging                = true
+  cloud_watch_logs_role_arn     = aws_iam_role.cloudtrail_role.arn
+  cloud_watch_logs_group_arn    = "${aws_cloudwatch_log_group.trail.arn}:*"
+
+  depends_on = [
+    aws_iam_role_policy.cloudtrail_policy,
+    aws_s3_bucket_policy.trail_bucket_policy,
+    aws_cloudwatch_log_group.trail
+  ]
+}
+
+output "log_group_name" {
+  value = aws_cloudwatch_log_group.trail.name
+}
+
+output "s3_bucket_name" {
+  value = aws_s3_bucket.trail_bucket.bucket
 }

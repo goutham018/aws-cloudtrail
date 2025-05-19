@@ -1,11 +1,15 @@
-resource "aws_sns_topic" "login_alerts" {
-  name = "ConsoleLoginAlerts"
+variable "email" {
+  type = string
 }
 
-resource "aws_sns_topic_subscription" "email" {
+resource "aws_sns_topic" "login_alerts" {
+  name = "console-login-alerts"
+}
+
+resource "aws_sns_topic_subscription" "email_sub" {
   topic_arn = aws_sns_topic.login_alerts.arn
   protocol  = "email"
-  endpoint  = var.email_address
+  endpoint  = var.email
 }
 
 output "topic_arn" {
