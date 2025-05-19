@@ -1,6 +1,6 @@
 resource "aws_cloudwatch_metric_alarm" "cloud-watch-alarm" {
-  alarm_name          = "AWS-Login-Alarm"
-  alarm_description   = "Triggers on AWS Console login attempts"
+  alarm_name          = "Login-Alert"
+  alarm_description   = "Login Alert Alaram"
   metric_name         = "ConsoleLogin-for-demo"
   namespace           = "CloudTrailMetrics"
   statistic           = "Sum"
