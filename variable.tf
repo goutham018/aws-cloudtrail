@@ -1,6 +1,7 @@
 variable "email_address" {
   description = "Email to the subscriber"
   type        = string
+  default     = "gouthamr@hcltech.com"
 }
 
 variable "cloudtrail_role_name" {
