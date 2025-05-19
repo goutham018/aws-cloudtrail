@@ -1,6 +1,3 @@
-variable "role_name" {}
-variable "sns_topic_arn" {}
-
 resource "aws_iam_role" "cloudtrail_role" {
   name = var.role_name
 
