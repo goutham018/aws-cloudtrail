@@ -1,17 +1,7 @@
-variable "log_group_name" {
-  type = string
-}
-variable "filter_pattern" {
-  type = string
-}
-variable "sns_topic_arn" {
-  type = string
-}
-
 resource "aws_cloudwatch_metric_alarm" "login_alarm" {
-  alarm_name          = "ConsoleLoginAlarm"
+  alarm_name          = "AWS-Login-Alarm"
   alarm_description   = "Triggers on AWS Console login attempts"
-  metric_name         = "ConsoleLoginEventCount"
+  metric_name         = "ConsoleLogin-for-demo"
   namespace           = "CloudTrailMetrics"
   statistic           = "Sum"
   period              = 300

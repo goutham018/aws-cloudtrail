@@ -1,13 +1,9 @@
-resource "random_id" "suffix" {
-  byte_length = 4
-}
-
 resource "aws_s3_bucket" "trail_bucket" {
-  bucket        = "cloudtrail-activity-logs-${random_id.suffix.hex}"
+  bucket        = "cloudtrail-activity-logs-273550"
   force_destroy = true
 
   tags = {
-    Name = "CloudTrailLogsBucket"
+    Name = "CloudTrail-Bucket-for-demo"
   }
 }
 
@@ -45,12 +41,12 @@ resource "aws_s3_bucket_policy" "trail_bucket_policy" {
 data "aws_caller_identity" "current" {}
 
 resource "aws_cloudwatch_log_group" "trail" {
-  name              = "/aws/cloudtrail/activity"
-  retention_in_days = 7
+  name              = "/aws/cloudtrail/login"
+  retention_in_days = 30
 }
 
 resource "aws_iam_role" "cloudtrail_role" {
-  name = "cloudtrail-cloudwatch-role"
+  name = "cloudtrail-role-for-demo"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -65,7 +61,7 @@ resource "aws_iam_role" "cloudtrail_role" {
 }
 
 resource "aws_iam_role_policy" "cloudtrail_policy" {
-  name = "cloudtrail-cloudwatch-policy"
+  name = "cloudwatch-policy-for-demo"
   role = aws_iam_role.cloudtrail_role.id
 
   policy = jsonencode({
