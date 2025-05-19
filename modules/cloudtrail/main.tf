@@ -40,7 +40,7 @@ resource "aws_s3_bucket_policy" "trail_bucket_policy" {
 
 data "aws_caller_identity" "current" {}
 
-resource "aws_cloudwatch_log_group" "trail" {
+resource "aws_cloudwatch_log_group" "trail-for-demo" {
   name              = "/aws/cloudtrail/login/demo"
   retention_in_days = 30
 }
@@ -72,7 +72,7 @@ resource "aws_iam_role_policy" "cloudtrail_policy" {
         "logs:PutLogEvents",
         "logs:CreateLogStream"
       ]
-      Resource = "${aws_cloudwatch_log_group.trail.arn}:*"
+      Resource = "${aws_cloudwatch_log_group.trail-for-demo.arn}:*"
     }]
   })
 }
@@ -85,17 +85,17 @@ resource "aws_cloudtrail" "trail" {
   enable_log_file_validation    = true
   enable_logging                = true
   cloud_watch_logs_role_arn     = aws_iam_role.cloudtrail_role.arn
-  cloud_watch_logs_group_arn    = "${aws_cloudwatch_log_group.trail.arn}:*"
+  cloud_watch_logs_group_arn    = "${aws_cloudwatch_log_group.trail-for-demo.arn}:*"
 
   depends_on = [
     aws_iam_role_policy.cloudtrail_policy,
     aws_s3_bucket_policy.trail_bucket_policy,
-    aws_cloudwatch_log_group.trail
+    aws_cloudwatch_log_group.trail-for-demo
   ]
 }
 
 output "log_group_name" {
-  value = aws_cloudwatch_log_group.trail.name
+  value = aws_cloudwatch_log_group.trail-for-demo.name
 }
 
 output "s3_bucket_name" {
