@@ -93,11 +93,3 @@ resource "aws_cloudtrail" "trail" {
     aws_cloudwatch_log_group.trail-for-demo
   ]
 }
-
-output "log_group_name" {
-  value = aws_cloudwatch_log_group.trail-for-demo.name
-}
-
-output "s3_bucket_name" {
-  value = aws_s3_bucket.trail_bucket.bucket
-}
